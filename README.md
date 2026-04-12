@@ -1,5 +1,9 @@
 # Biu — Assistente de Emprego via WhatsApp
 
+<p align="center">
+  <img src="docs/WhatsApp%20Image%202026-04-12%20at%2008.48.20.jpeg" alt="Logo do Biu" width="200"/>
+</p>
+
 > "Oi! Eu sou o Biu, seu assistente de emprego. Vou te ajudar a montar um currículo bem bonito. É rapidinho!"
 
 Biu é um assistente conversacional que ajuda pessoas de **baixa escolaridade e baixo letramento digital** a:
