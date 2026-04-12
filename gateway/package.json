@@ -1,0 +1,14 @@
+{
+  "name": "biu-gateway",
+  "version": "0.1.0",
+  "description": "WhatsApp gateway for Biu",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "whatsapp-web.js": "^1.26.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}

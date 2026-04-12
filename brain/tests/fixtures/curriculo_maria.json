@@ -1,0 +1,63 @@
+{
+  "dados_pessoais": {
+    "nome": "Maria da Silva",
+    "telefone": "(81) 99999-1234",
+    "email": null,
+    "cidade": "Recife",
+    "bairro": "Ibura"
+  },
+  "objetivo": "Cabeleireira ou Auxiliar de Confeitaria",
+  "educacao": {
+    "escolaridade": "Ensino Médio Completo",
+    "instituicao": "Colégio Estadual",
+    "ano_conclusao": null,
+    "cursos": [
+      {
+        "nome": "Cabeleireira",
+        "instituicao": "SENAC",
+        "ano": "2019",
+        "carga_horaria": null
+      }
+    ]
+  },
+  "experiencia": [
+    {
+      "cargo": "Cabeleireira",
+      "empresa": "Salão Beleza Pura",
+      "cidade": "Recife, PE",
+      "periodo": "2019 – 2022",
+      "descricao": [
+        "Realizou cortes, escovas e colorações, atendendo em média 8 clientes por dia",
+        "Treinou nova colaboradora nos procedimentos e técnicas do salão",
+        "Fidelizou clientela por meio de atendimento personalizado e pontualidade"
+      ]
+    },
+    {
+      "cargo": "Confeiteira Autônoma",
+      "empresa": "Autônoma",
+      "cidade": "Recife, PE",
+      "periodo": "2017 – 2019",
+      "descricao": [
+        "Produziu e comercializou aproximadamente 30 bolos por semana, gerenciando pedidos, preparo e entregas",
+        "Administrou compra de insumos e controle de custos de produção",
+        "Captou clientes por meio de divulgação boca a boca no bairro"
+      ]
+    }
+  ],
+  "habilidades": {
+    "tecnicas": [
+      "Corte, escova e coloração capilar",
+      "Confeitaria e produção de doces",
+      "Redes sociais (WhatsApp e Instagram)",
+      "Pagamentos digitais (Pix)"
+    ],
+    "idiomas": ["Português (nativo)"],
+    "interesses": ["Confeitaria artística", "Beleza e estética"]
+  },
+  "atividades": [
+    {
+      "atividade": "Membro do Grupo de Mulheres — Igreja do bairro Ibura",
+      "descricao": "Organizou bazares mensais para arrecadação de fundos e fortalecimento da comunidade"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+services:
+  brain:
+    build: ./brain
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - BIU_DATA_RETENTION_DAYS=${BIU_DATA_RETENTION_DAYS:-90}
+      - BIU_PDF_RETENTION_DAYS=${BIU_PDF_RETENTION_DAYS:-30}
+      - BIU_LOG_LEVEL=${BIU_LOG_LEVEL:-INFO}
+      - BIU_DB_PATH=/app/data/sqlite/biu.db
+      - BIU_PDF_DIR=/app/data/pdfs
+      - BIU_LOG_DIR=/app/data/logs
+    volumes:
+      - ./data/sqlite:/app/data/sqlite
+      - ./data/pdfs:/app/data/pdfs
+      - ./data/logs:/app/data/logs
+      - ./brain/prompts:/app/prompts:ro
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  gateway:
+    build: ./gateway
+    environment:
+      - BRAIN_URL=http://brain:8000
+      - PDF_DIR=/app/pdfs
+    volumes:
+      - ./data/wwebjs-auth:/app/.wwebjs_auth
+      - ./data/pdfs:/app/pdfs:ro
+    depends_on:
+      - brain
+    restart: unless-stopped
