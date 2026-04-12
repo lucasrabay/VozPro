@@ -1,10 +1,11 @@
 const BRAIN_URL = process.env.BRAIN_URL || 'http://brain:8000';
 
-export async function sendMessageToBrain({ phone, kind, content, mime }) {
+export async function sendMessageToBrain({ phone, kind, content, mime }, signal) {
   const res = await fetch(`${BRAIN_URL}/message`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ phone, kind, content, mime: mime || null }),
+    signal,
   });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
@@ -13,11 +14,12 @@ export async function sendMessageToBrain({ phone, kind, content, mime }) {
   return res.json();
 }
 
-export async function forgetAtBrain(phone) {
+export async function forgetAtBrain(phone, signal) {
   const res = await fetch(`${BRAIN_URL}/forget`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ phone }),
+    signal,
   });
   if (!res.ok) {
     const body = await res.text().catch(() => '');

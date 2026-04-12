@@ -25,9 +25,9 @@ class BiuReply(BaseModel):
 
 class DadosPessoais(BaseModel):
     nome: str
-    telefone: str
+    telefone: Optional[str] = None
     email: Optional[str] = None
-    cidade: str
+    cidade: Optional[str] = None
     bairro: Optional[str] = None
 
 
@@ -39,15 +39,15 @@ class Curso(BaseModel):
 
 
 class Educacao(BaseModel):
-    escolaridade: str
+    escolaridade: Optional[str] = None
     instituicao: Optional[str] = None
     ano_conclusao: Optional[str] = None
     cursos: list[Curso] = Field(default_factory=list)
 
 
 class Experiencia(BaseModel):
-    cargo: str
-    empresa: str
+    cargo: Optional[str] = None
+    empresa: Optional[str] = None
     cidade: Optional[str] = None
     periodo: Optional[str] = None
     descricao: list[str] = Field(default_factory=list)
@@ -60,16 +60,16 @@ class Habilidades(BaseModel):
 
 
 class Atividade(BaseModel):
-    atividade: str
-    descricao: str
+    atividade: Optional[str] = None
+    descricao: Optional[str] = None
 
 
 class Curriculo(BaseModel):
     dados_pessoais: DadosPessoais
-    objetivo: str
-    educacao: Educacao
+    objetivo: Optional[str] = None
+    educacao: Optional[Educacao] = None
     experiencia: list[Experiencia] = Field(default_factory=list)
-    habilidades: Habilidades
+    habilidades: Habilidades = Field(default_factory=Habilidades)
     atividades: list[Atividade] = Field(default_factory=list)
 
 

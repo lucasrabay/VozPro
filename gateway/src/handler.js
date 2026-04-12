@@ -15,12 +15,12 @@ export async function handleMessage(client, msg, MessageMedia) {
 
   const phone = msg.from;
 
-  await enqueue(phone, async () => {
+  await enqueue(phone, async (signal) => {
     const kind = classifyMessage(msg);
 
     if (kind === 'text' && isForgetCommand(msg.body)) {
       try {
-        await forgetAtBrain(phone);
+        await forgetAtBrain(phone, signal);
         await client.sendMessage(
           phone,
           'Pronto! Apaguei tudo. Se quiser começar de novo, é só mandar um oi.'
@@ -65,15 +65,19 @@ export async function handleMessage(client, msg, MessageMedia) {
       return;
     }
 
+    if (signal.aborted) return;
+
     let reply;
     try {
-      reply = await sendMessageToBrain(payload);
+      reply = await sendMessageToBrain(payload, signal);
     } catch (err) {
+      if (signal.aborted) return;
       console.error('[handler] brain call failed:', err);
       await client.sendMessage(phone, errorReply());
       return;
     }
 
+    if (signal.aborted) return;
     await sendReply(client, MessageMedia, phone, reply);
   });
 }
@@ -81,7 +85,7 @@ export async function handleMessage(client, msg, MessageMedia) {
 async function sendReply(client, MessageMedia, phone, reply) {
   if (reply.audio_b64) {
     try {
-      const audioMedia = new MessageMedia('audio/wav', reply.audio_b64, 'biu.wav');
+      const audioMedia = new MessageMedia('audio/ogg; codecs=opus', reply.audio_b64, 'biu.ogg');
       await client.sendMessage(phone, audioMedia, { sendAudioAsVoice: true });
     } catch (err) {
       console.error('[handler] send audio failed:', err);

@@ -132,7 +132,12 @@ async def post_message(req: MessageRequest) -> MessageResponse:
             curriculo_data = json.loads(reply.response)
             curriculo = Curriculo.model_validate(curriculo_data)
         except (json.JSONDecodeError, ValidationError) as e:
-            log.error("curriculo_parse_failed", phone=phone_masked, error=str(e))
+            log.error(
+                "curriculo_parse_failed",
+                phone=phone_masked,
+                error=str(e),
+                raw=reply.response[:800],
+            )
             final_text = (
                 "Tive um probleminha pra montar seu currículo agora. "
                 "Me manda 'gerar de novo' que eu tento de novo."

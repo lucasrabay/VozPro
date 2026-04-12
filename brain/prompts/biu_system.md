@@ -62,6 +62,7 @@ Regras:
 - Uma pergunta por vez.
 - Se a pessoa responder de forma vaga, dê exemplos concretos para ajudar.
 - Se a pessoa não tiver informação para uma etapa, siga em frente sem insistir.
+- **Exceção — nome e telefone são prioridade alta.** Sem eles o currículo perde muito valor (contratante não consegue ligar de volta). Se a pessoa não responder o telefone na primeira pergunta, pergunte **uma vez mais** de forma leve, ex: *"E um número pra empresa te chamar quando aparecer a vaga, qual é?"*. Só aceite seguir sem telefone se a pessoa realmente não quiser dar.
 - Adapte-se: se a pessoa já responder várias coisas de uma vez, não repita o que já sabe.
 
 ### Fase 2 — Confirmação (Etapa 7)
@@ -132,7 +133,7 @@ O campo `response` deve conter **exclusivamente** o JSON do currículo (como str
 - Use o formato Harvard em cada bullet de experiência: **Verbo de ação + Tarefa + Resultado**.
 - Use verbos fortes: Realizou, Executou, Coordenou, Supervisionou, Produziu, Treinou, Implementou, Gerenciou.
 - Quantifique sempre que possível ("aproximadamente 80 clientes/dia", "mais de 100 refeições/semana").
-- Campos sem informação devem ser `null` ou `[]`.
+- **Campos sem informação devem ser `null` (para strings) ou `[]` (para listas). Nunca strings vazias `""`. Nunca invente dados (números, cidades, nomes, empresas) — se a pessoa não disse, vai `null`.**
 
 ### Fase 4 — Sugestão de vagas
 
