@@ -151,7 +151,7 @@ Design completo (decisões, trade-offs, tratamento de erros, fluxos) em [`docs/s
 ### 1. Clone e configure as variáveis de ambiente
 
 ```bash
-git clone <este-repo>
+git clone https://github.com/lucasrabay/VozPro.git
 cd VozPro
 
 cp .env.example .env
@@ -283,8 +283,8 @@ Pra rodar testes unitários fora do Docker:
 ```bash
 cd brain
 python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # Linux/Mac
+source .venv/bin/activate     # Linux/Mac
+# .venv\Scripts\activate      # Windows
 
 pip install -e ".[dev]"
 pytest
