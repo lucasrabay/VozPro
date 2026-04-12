@@ -1,48 +1,78 @@
 from __future__ import annotations
 
-import json
+import asyncio
 import os
+import re
 import urllib.parse
 from typing import Protocol
 
+import structlog
 from google import genai
 from google.genai import types as gtypes
 
 from .models import Curriculo
+from .retry import retry_async
+
+log = structlog.get_logger()
 
 GEMINI_JOBS_MODEL = os.environ.get("BIU_JOBS_MODEL", "gemini-3-flash-preview")
 
 _FALLBACK_PORTAIS = [
     ("Indeed", "https://www.indeed.com.br/jobs?q={q}&l={l}"),
-    ("Catho", "https://www.catho.com.br/vagas/{q}/{l}/"),
-    ("Vagas.com", "https://www.vagas.com.br/vagas-de-{q}-em-{l}"),
+    ("Catho", "https://www.catho.com.br/vagas/{q_dash}/{l_dash}/"),
+    ("Vagas.com", "https://www.vagas.com.br/vagas-de-{q_dash}-em-{l_dash}"),
 ]
 
+_SHORTENER_RE = re.compile(
+    r"https?://(?:bit\.ly|tinyurl\.com|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|rebrand\.ly|encurtador\.\w+)/\S+",
+    re.IGNORECASE,
+)
 
-class GeminiJobsClient(Protocol):
-    async def find_jobs(self, curriculo: Curriculo) -> str: ...
+_STOPWORDS = {
+    "atuar", "nas", "na", "no", "nos", "em", "de", "da", "do", "das", "dos",
+    "com", "como", "para", "por", "e", "ou", "a", "o", "as", "os", "um",
+    "uma", "uns", "umas", "áreas", "área", "setor", "setores", "aplicando",
+    "trabalhar", "trabalho", "vaga", "vagas", "ser", "conhecimentos",
+    "facilidade", "público",
+}
+
+
+def _extract_keyword(objetivo: str) -> str:
+    """Extract a short, search-friendly keyword phrase from a (possibly long)
+    objective sentence. Keeps the first 2-3 meaningful content words."""
+    first_clause = re.split(r"\s+ou\s+|,|\.|\s+aplicando\s+", objetivo.strip(), maxsplit=1)[0]
+    tokens = re.findall(r"[\wÀ-ÿ]+", first_clause.lower())
+    content = [t for t in tokens if t not in _STOPWORDS and len(t) > 2]
+    if not content:
+        return objetivo.strip()
+    return " ".join(content[:3])
 
 
 def _fallback_message(curriculo: Curriculo) -> str:
     objetivo_raw = curriculo.objetivo or "emprego"
     cidade_raw = curriculo.dados_pessoais.cidade or "sua cidade"
 
-    q_slug = urllib.parse.quote_plus(objetivo_raw.split(" ou ")[0].strip())
-    l_slug = urllib.parse.quote_plus(cidade_raw)
-    q_dash = objetivo_raw.split(" ou ")[0].strip().lower().replace(" ", "-")
-    l_dash = cidade_raw.lower().replace(" ", "-")
+    keyword = _extract_keyword(objetivo_raw)
+    q_plus = urllib.parse.quote_plus(keyword)
+    l_plus = urllib.parse.quote_plus(cidade_raw)
+    q_dash = urllib.parse.quote(keyword.replace(" ", "-"))
+    l_dash = urllib.parse.quote(cidade_raw.lower().replace(" ", "-"))
 
     lines = [
         "Seu currículo ficou pronto e já já você recebe o PDF!",
-        f"Com base no que você me contou, dá pra procurar vaga de \"{objetivo_raw}\" em {cidade_raw}. Olha onde pesquisar:",
+        f"Com base no que você me contou, dá pra procurar vaga de \"{keyword}\" em {cidade_raw}. Olha onde pesquisar:",
         "",
     ]
     for i, (nome, template) in enumerate(_FALLBACK_PORTAIS, 1):
-        url = template.format(q=q_slug if "{q}" in template and "+" in template else q_dash, l=l_slug if "{l}" in template and "+" in template else l_dash)
+        url = template.format(q=q_plus, l=l_plus, q_dash=q_dash, l_dash=l_dash)
         lines.append(f"{i}. {nome}: {url}")
     lines.append("")
     lines.append("Boa sorte! Tô torcendo por você.")
     return "\n".join(lines)
+
+
+class GeminiJobsClient(Protocol):
+    async def find_jobs(self, curriculo: Curriculo) -> str: ...
 
 
 class RealGeminiJobsClient:
@@ -72,14 +102,17 @@ Escreva uma mensagem curta e calorosa em PT-BR (como áudio de WhatsApp), com:
 2. Lista de 3 a 4 vagas concretas no formato "- Cargo na Empresa — link".
 3. Uma despedida curta e encorajadora.
 
-Use "você", frases curtas, tom de amigo. Máximo 8 linhas. Inclua os links encontrados DIRETAMENTE no texto."""
+Use "você", frases curtas, tom de amigo. Máximo 8 linhas. Inclua os links encontrados DIRETAMENTE no texto.
+
+REGRAS DOS LINKS (CRÍTICO):
+- Use o URL COMPLETO e ORIGINAL de cada vaga, exatamente como aparece no resultado de busca (ex: https://www.indeed.com.br/viewjob?jk=...).
+- NUNCA encurte links (nada de bit.ly, tinyurl, t.co, goo.gl, encurtador, etc).
+- NUNCA invente URLs. Se não achou o link completo real, omita a vaga."""
 
         config = gtypes.GenerateContentConfig(
             tools=[gtypes.Tool(google_search=gtypes.GoogleSearch())],
-            temperature=0.7,
+            temperature=0.3,
         )
-
-        import asyncio
 
         def sync_call() -> str:
             resp = self._client.models.generate_content(
@@ -89,10 +122,26 @@ Use "você", frases curtas, tom de amigo. Máximo 8 linhas. Inclua os links enco
             )
             return resp.text or ""
 
+        async def _once() -> str:
+            return await asyncio.to_thread(sync_call)
+
         try:
-            text = await asyncio.to_thread(sync_call)
-            if not text or len(text.strip()) < 40:
-                return _fallback_message(curriculo)
-            return text
-        except Exception:
+            text = await retry_async(_once, attempts=3, base_delay=2.0, factor=3.0)
+        except Exception as e:
+            log.warning("jobs_fallback", reason="exception", error=str(e))
             return _fallback_message(curriculo)
+
+        if not text or len(text.strip()) < 40:
+            log.warning("jobs_fallback", reason="empty_response", length=len(text or ""))
+            return _fallback_message(curriculo)
+
+        shortener_match = _SHORTENER_RE.search(text)
+        if shortener_match:
+            log.warning(
+                "jobs_fallback",
+                reason="shortener_detected",
+                sample=shortener_match.group(0),
+            )
+            return _fallback_message(curriculo)
+
+        return text

@@ -1,4 +1,4 @@
-const FORGET_REGEX = /\b(apagar?|apaga|delete?r?)\s+(meus\s+)?(dados|informa[çc][õo]es)\b/i;
+const FORGET_REGEX = /\b(apag\w*|delet\w*|esque[cç]\w*|remov\w*)\s+(meus\s+|minhas\s+)?(dados|informa[çc][õo]es|cadastro)\b/i;
 
 export function isForgetCommand(text) {
   if (!text) return false;

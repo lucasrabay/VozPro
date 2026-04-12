@@ -9,9 +9,15 @@
   <header>
     <h1>{{ c.dados_pessoais.nome }}</h1>
     <p class="contato">
-      {{ c.dados_pessoais.telefone }}
-      {%- if c.dados_pessoais.email %} · {{ c.dados_pessoais.email }}{% endif -%}
-      {%- if c.dados_pessoais.cidade %} · {{ c.dados_pessoais.cidade }}{% if c.dados_pessoais.bairro %} — {{ c.dados_pessoais.bairro }}{% endif %}{% endif -%}
+      {%- set partes = [] -%}
+      {%- if c.dados_pessoais.telefone %}{% set _ = partes.append(c.dados_pessoais.telefone) %}{% endif -%}
+      {%- if c.dados_pessoais.email %}{% set _ = partes.append(c.dados_pessoais.email) %}{% endif -%}
+      {%- if c.dados_pessoais.cidade -%}
+        {%- set loc = c.dados_pessoais.cidade -%}
+        {%- if c.dados_pessoais.bairro %}{% set loc = loc + ' — ' + c.dados_pessoais.bairro %}{% endif -%}
+        {%- set _ = partes.append(loc) -%}
+      {%- endif -%}
+      {{ partes | join(' · ') }}
     </p>
   </header>
 
@@ -22,9 +28,10 @@
   </section>
   {% endif %}
 
-  {% if c.educacao %}
+  {% if c.educacao and (c.educacao.escolaridade or c.educacao.cursos) %}
   <section>
     <h2>Educação</h2>
+    {% if c.educacao.escolaridade %}
     <div class="item">
       <div class="item-head">
         <strong>{{ c.educacao.escolaridade }}</strong>
@@ -32,6 +39,7 @@
       </div>
       {% if c.educacao.instituicao %}<div class="subtitle">{{ c.educacao.instituicao }}</div>{% endif %}
     </div>
+    {% endif %}
 
     {% for curso in c.educacao.cursos %}
     <div class="item">
@@ -52,13 +60,14 @@
   <section>
     <h2>Experiência Profissional</h2>
     {% for exp in c.experiencia %}
+    {% if exp.cargo or exp.empresa %}
     <div class="item">
       <div class="item-head">
-        <strong>{{ exp.cargo }}</strong>
+        <strong>{{ exp.cargo or exp.empresa }}</strong>
         {% if exp.periodo %}<span class="periodo">{{ exp.periodo }}</span>{% endif %}
       </div>
       <div class="subtitle">
-        {{ exp.empresa }}{% if exp.cidade %} — {{ exp.cidade }}{% endif %}
+        {% if exp.cargo and exp.empresa %}{{ exp.empresa }}{% endif %}{% if exp.cidade %} — {{ exp.cidade }}{% endif %}
       </div>
       {% if exp.descricao %}
       <ul>
@@ -66,6 +75,7 @@
       </ul>
       {% endif %}
     </div>
+    {% endif %}
     {% endfor %}
   </section>
   {% endif %}
@@ -89,10 +99,12 @@
   <section>
     <h2>Atividades e Liderança</h2>
     {% for a in c.atividades %}
+    {% if a.atividade or a.descricao %}
     <div class="item">
-      <strong>{{ a.atividade }}</strong>
-      <p>{{ a.descricao }}</p>
+      {% if a.atividade %}<strong>{{ a.atividade }}</strong>{% endif %}
+      {% if a.descricao %}<p>{{ a.descricao }}</p>{% endif %}
     </div>
+    {% endif %}
     {% endfor %}
   </section>
   {% endif %}

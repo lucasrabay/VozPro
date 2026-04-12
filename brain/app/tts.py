@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import os
 import struct
+import subprocess
 from typing import Protocol
 
 from google import genai
@@ -63,6 +64,25 @@ def _wrap_wav(audio_data: bytes, mime_type: str) -> bytes:
     return header + audio_data
 
 
+def _to_ogg_opus(wav_bytes: bytes) -> bytes:
+    proc = subprocess.run(
+        [
+            "ffmpeg",
+            "-i", "pipe:0",
+            "-c:a", "libopus",
+            "-b:a", "32k",
+            "-f", "ogg",
+            "pipe:1",
+            "-y",
+            "-loglevel", "error",
+        ],
+        input=wav_bytes,
+        capture_output=True,
+        check=True,
+    )
+    return proc.stdout
+
+
 class RealTTSClient:
     def __init__(
         self,
@@ -102,8 +122,8 @@ class RealTTSClient:
                     data = part.inline_data.data
                     mime = part.inline_data.mime_type or "audio/L16;rate=24000"
                     if mime.startswith("audio/wav") or mime.startswith("audio/x-wav"):
-                        return data
-                    return _wrap_wav(data, mime)
+                        return _to_ogg_opus(data)
+                    return _to_ogg_opus(_wrap_wav(data, mime))
             raise RuntimeError("TTS returned no audio data")
 
         async def _once() -> bytes:
