@@ -23,6 +23,11 @@ _FALLBACK_PORTAIS = [
     ("Vagas.com", "https://www.vagas.com.br/vagas-de-{q_dash}-em-{l_dash}"),
 ]
 
+_SHORTENER_RE = re.compile(
+    r"https?://(?:bit\.ly|tinyurl\.com|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|rebrand\.ly|encurtador\.\w+)/\S+",
+    re.IGNORECASE,
+)
+
 _STOPWORDS = {
     "atuar", "nas", "na", "no", "nos", "em", "de", "da", "do", "das", "dos",
     "com", "como", "para", "por", "e", "ou", "a", "o", "as", "os", "um",
@@ -97,11 +102,16 @@ Escreva uma mensagem curta e calorosa em PT-BR (como áudio de WhatsApp), com:
 2. Lista de 3 a 4 vagas concretas no formato "- Cargo na Empresa — link".
 3. Uma despedida curta e encorajadora.
 
-Use "você", frases curtas, tom de amigo. Máximo 8 linhas. Inclua os links encontrados DIRETAMENTE no texto."""
+Use "você", frases curtas, tom de amigo. Máximo 8 linhas. Inclua os links encontrados DIRETAMENTE no texto.
+
+REGRAS DOS LINKS (CRÍTICO):
+- Use o URL COMPLETO e ORIGINAL de cada vaga, exatamente como aparece no resultado de busca (ex: https://www.indeed.com.br/viewjob?jk=...).
+- NUNCA encurte links (nada de bit.ly, tinyurl, t.co, goo.gl, encurtador, etc).
+- NUNCA invente URLs. Se não achou o link completo real, omita a vaga."""
 
         config = gtypes.GenerateContentConfig(
             tools=[gtypes.Tool(google_search=gtypes.GoogleSearch())],
-            temperature=0.7,
+            temperature=0.3,
         )
 
         def sync_call() -> str:
@@ -124,4 +134,14 @@ Use "você", frases curtas, tom de amigo. Máximo 8 linhas. Inclua os links enco
         if not text or len(text.strip()) < 40:
             log.warning("jobs_fallback", reason="empty_response", length=len(text or ""))
             return _fallback_message(curriculo)
+
+        shortener_match = _SHORTENER_RE.search(text)
+        if shortener_match:
+            log.warning(
+                "jobs_fallback",
+                reason="shortener_detected",
+                sample=shortener_match.group(0),
+            )
+            return _fallback_message(curriculo)
+
         return text
