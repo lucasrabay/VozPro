@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Currículo — {{ c.dados_pessoais.nome }}</title>
+  <link rel="stylesheet" href="curriculo.css">
+</head>
+<body>
+  <header>
+    <h1>{{ c.dados_pessoais.nome }}</h1>
+    <p class="contato">
+      {{ c.dados_pessoais.telefone }}
+      {%- if c.dados_pessoais.email %} · {{ c.dados_pessoais.email }}{% endif -%}
+      {%- if c.dados_pessoais.cidade %} · {{ c.dados_pessoais.cidade }}{% if c.dados_pessoais.bairro %} — {{ c.dados_pessoais.bairro }}{% endif %}{% endif -%}
+    </p>
+  </header>
+
+  {% if c.objetivo %}
+  <section>
+    <h2>Objetivo</h2>
+    <p>{{ c.objetivo }}</p>
+  </section>
+  {% endif %}
+
+  {% if c.educacao %}
+  <section>
+    <h2>Educação</h2>
+    <div class="item">
+      <div class="item-head">
+        <strong>{{ c.educacao.escolaridade }}</strong>
+        {% if c.educacao.ano_conclusao %}<span class="periodo">{{ c.educacao.ano_conclusao }}</span>{% endif %}
+      </div>
+      {% if c.educacao.instituicao %}<div class="subtitle">{{ c.educacao.instituicao }}</div>{% endif %}
+    </div>
+
+    {% for curso in c.educacao.cursos %}
+    <div class="item">
+      <div class="item-head">
+        <strong>{{ curso.nome }}</strong>
+        {% if curso.ano %}<span class="periodo">{{ curso.ano }}</span>{% endif %}
+      </div>
+      <div class="subtitle">
+        {% if curso.instituicao %}{{ curso.instituicao }}{% endif %}
+        {% if curso.carga_horaria %} · {{ curso.carga_horaria }}{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if c.experiencia %}
+  <section>
+    <h2>Experiência Profissional</h2>
+    {% for exp in c.experiencia %}
+    <div class="item">
+      <div class="item-head">
+        <strong>{{ exp.cargo }}</strong>
+        {% if exp.periodo %}<span class="periodo">{{ exp.periodo }}</span>{% endif %}
+      </div>
+      <div class="subtitle">
+        {{ exp.empresa }}{% if exp.cidade %} — {{ exp.cidade }}{% endif %}
+      </div>
+      {% if exp.descricao %}
+      <ul>
+        {% for bullet in exp.descricao %}<li>{{ bullet }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if c.habilidades and (c.habilidades.tecnicas or c.habilidades.idiomas or c.habilidades.interesses) %}
+  <section>
+    <h2>Habilidades e Interesses</h2>
+    {% if c.habilidades.tecnicas %}
+    <p><strong>Técnicas:</strong> {{ c.habilidades.tecnicas | join(' · ') }}</p>
+    {% endif %}
+    {% if c.habilidades.idiomas %}
+    <p><strong>Idiomas:</strong> {{ c.habilidades.idiomas | join(' · ') }}</p>
+    {% endif %}
+    {% if c.habilidades.interesses %}
+    <p><strong>Interesses:</strong> {{ c.habilidades.interesses | join(' · ') }}</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if c.atividades %}
+  <section>
+    <h2>Atividades e Liderança</h2>
+    {% for a in c.atividades %}
+    <div class="item">
+      <strong>{{ a.atividade }}</strong>
+      <p>{{ a.descricao }}</p>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+</body>
+</html>

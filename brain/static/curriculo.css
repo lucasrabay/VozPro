@@ -1,0 +1,83 @@
+@page {
+  size: A4;
+  margin: 2cm 2.2cm;
+}
+
+body {
+  font-family: "DejaVu Serif", Georgia, serif;
+  font-size: 10.5pt;
+  color: #222;
+  line-height: 1.4;
+}
+
+header {
+  text-align: center;
+  border-bottom: 1.5pt solid #222;
+  padding-bottom: 8pt;
+  margin-bottom: 14pt;
+}
+
+header h1 {
+  font-size: 22pt;
+  margin: 0;
+  letter-spacing: 0.5pt;
+  text-transform: uppercase;
+}
+
+header .contato {
+  margin: 4pt 0 0 0;
+  font-size: 9.5pt;
+  color: #555;
+}
+
+section {
+  margin-bottom: 12pt;
+}
+
+section h2 {
+  font-size: 11.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.4pt;
+  border-bottom: 0.5pt solid #888;
+  padding-bottom: 2pt;
+  margin: 0 0 6pt 0;
+}
+
+.item {
+  margin-bottom: 7pt;
+}
+
+.item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.item-head strong {
+  font-size: 10.5pt;
+}
+
+.item-head .periodo {
+  font-size: 9.5pt;
+  color: #666;
+  font-style: italic;
+}
+
+.subtitle {
+  font-size: 10pt;
+  color: #555;
+  margin-bottom: 3pt;
+}
+
+ul {
+  margin: 3pt 0 0 16pt;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 2pt;
+}
+
+p {
+  margin: 3pt 0;
+}
