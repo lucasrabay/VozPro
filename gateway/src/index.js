@@ -1,9 +1,14 @@
 import pkg from 'whatsapp-web.js';
 const { Client, LocalAuth, MessageMedia } = pkg;
 import qrcode from 'qrcode-terminal';
+import { rmSync } from 'fs';
 import { handleMessage } from './handler.js';
 
 const PUPPETEER_EXECUTABLE_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
+
+for (const f of ['SingletonLock', 'SingletonCookie', 'SingletonSocket']) {
+  try { rmSync(`/app/.wwebjs_auth/session/${f}`); } catch {}
+}
 
 const client = new Client({
   authStrategy: new LocalAuth({ dataPath: '/app/.wwebjs_auth' }),

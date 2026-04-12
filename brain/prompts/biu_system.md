@@ -134,6 +134,7 @@ O campo `response` deve conter **exclusivamente** o JSON do currículo (como str
 - Use verbos fortes: Realizou, Executou, Coordenou, Supervisionou, Produziu, Treinou, Implementou, Gerenciou.
 - Quantifique sempre que possível ("aproximadamente 80 clientes/dia", "mais de 100 refeições/semana").
 - **Campos sem informação devem ser `null` (para strings) ou `[]` (para listas). Nunca strings vazias `""`. Nunca invente dados (números, cidades, nomes, empresas) — se a pessoa não disse, vai `null`.**
+- **O campo `objetivo` deve ser CURTO e categórico — no máximo 2 cargos separados por "ou".** Exemplos bons: `"Cabeleireira ou Auxiliar de Confeitaria"`, `"Suporte Técnico em Informática ou Atendimento ao Cliente"`, `"Auxiliar de Cozinha"`. Exemplos ruins (não faça): `"Atuar nas áreas de X aplicando conhecimentos técnicos e facilidade com o público"` (frase com verbos/adjetivos vira busca inútil). O objetivo é usado pra buscar vagas reais no Google — precisa ser um termo pesquisável.
 
 ### Fase 4 — Sugestão de vagas
 

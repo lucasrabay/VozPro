@@ -1,5 +1,5 @@
 const queues = new Map();
-const TIMEOUT_MS = 60_000;
+const TIMEOUT_MS = 120_000;
 
 export function enqueue(phone, task) {
   const previous = queues.get(phone) || Promise.resolve();
@@ -9,9 +9,11 @@ export function enqueue(phone, task) {
     .then(() => withTimeout(task(ctrl.signal), TIMEOUT_MS, ctrl));
   queues.set(
     phone,
-    current.finally(() => {
-      if (queues.get(phone) === current) queues.delete(phone);
-    })
+    current
+      .finally(() => {
+        if (queues.get(phone) === current) queues.delete(phone);
+      })
+      .catch(() => {})
   );
   return current;
 }

@@ -4,6 +4,7 @@ import asyncio
 import base64
 import json
 import os
+import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -45,6 +46,17 @@ def _get_jobs() -> GeminiJobsClient:
     if _jobs_client is None:
         _jobs_client = RealGeminiJobsClient()
     return _jobs_client
+
+
+_URL_LINE_RE = re.compile(r"https?://|www\.")
+
+
+def _text_for_tts(text: str) -> str:
+    """Remove linhas que contêm URLs (lista de vagas, portais, etc) pra que o
+    TTS só leia a introdução e a conclusão da mensagem."""
+    kept = [ln for ln in text.split("\n") if not _URL_LINE_RE.search(ln)]
+    collapsed = re.sub(r"\n{3,}", "\n\n", "\n".join(kept)).strip()
+    return collapsed or text
 
 
 def _get_tts() -> TTSClient:
@@ -176,7 +188,7 @@ async def post_message(req: MessageRequest) -> MessageResponse:
                     final_type = "vagas"
 
     try:
-        audio_bytes = await _get_tts().synthesize(final_text)
+        audio_bytes = await _get_tts().synthesize(_text_for_tts(final_text))
         audio_b64 = base64.b64encode(audio_bytes).decode("ascii")
     except Exception as e:
         log.error("tts_failed", phone=phone_masked, error=str(e))
