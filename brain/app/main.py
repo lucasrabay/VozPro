@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
 
 from . import conversation, db
@@ -100,6 +101,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Biu brain", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory="/app/static"), name="static")
 log = get_logger("main")
 
 
@@ -113,6 +115,7 @@ async def post_message(req: MessageRequest) -> MessageResponse:
     phone_masked = mask_phone(req.phone)
     log.info("message_received", phone=phone_masked, kind=req.kind)
 
+    new_user = conversation.is_new_user(req.phone)
     history = conversation.get_history(req.phone)
 
     try:
@@ -199,6 +202,7 @@ async def post_message(req: MessageRequest) -> MessageResponse:
         type=final_type,
         audio_b64=audio_b64,
         pdf_path=pdf_path,
+        video_path="/app/static/apresentacao_biu.mp4" if new_user else None,
     )
 
 
