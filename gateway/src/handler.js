@@ -83,6 +83,19 @@ export async function handleMessage(client, msg, MessageMedia) {
 }
 
 async function sendReply(client, MessageMedia, phone, reply) {
+  if (reply.video_path) {
+    try {
+      const brainUrl = process.env.BRAIN_URL || 'http://brain:8000';
+      const res = await fetch(`${brainUrl}/static/apresentacao_biu.mp4`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const buf = Buffer.from(await res.arrayBuffer());
+      const videoMedia = new MessageMedia('video/mp4', buf.toString('base64'), 'apresentacao_biu.mp4');
+      await client.sendMessage(phone, videoMedia);
+    } catch (err) {
+      console.error('[handler] send welcome video failed:', err);
+    }
+  }
+
   if (reply.audio_b64) {
     try {
       const audioMedia = new MessageMedia('audio/ogg; codecs=opus', reply.audio_b64, 'biu.ogg');
