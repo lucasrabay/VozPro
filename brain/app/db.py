@@ -6,6 +6,10 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
+from .logging_config import get_logger
+
+log = get_logger("db")
+
 DB_PATH = os.environ.get("BIU_DB_PATH", "./data/sqlite/biu.db")
 
 SCHEMA = """
@@ -23,6 +27,11 @@ CREATE TABLE IF NOT EXISTS curriculos (
   curriculo_json TEXT NOT NULL,
   pdf_path       TEXT NOT NULL,
   created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS phones (
+  phone         TEXT PRIMARY KEY,
+  first_seen_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_conversations_updated ON conversations(updated_at);
@@ -66,3 +75,18 @@ def connect(db_path: str | None = None, retries: int = 3, delay: float = 0.1):
             raise
     if last_err:
         raise last_err
+
+
+def ensure_phone_seen(phone: str, db_path: str | None = None) -> bool:
+    """Insert phone if not already present. Returns True if inserted (new user)."""
+    path = db_path or DB_PATH
+    try:
+        with connect(path, retries=5) as conn:
+            cursor = conn.cursor()
+            cursor.execute("INSERT OR IGNORE INTO phones (phone) VALUES (?)", (phone,))
+            return cursor.rowcount == 1
+    except sqlite3.OperationalError as e:
+        if "locked" in str(e).lower():
+            log.warning("db_locked_ensure_phone_seen", phone=phone, error=str(e))
+            return False
+        raise
