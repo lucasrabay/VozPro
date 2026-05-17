@@ -85,6 +85,7 @@ class MessageResponse(BaseModel):
     type: BiuMessageType
     audio_b64: Optional[str] = None
     pdf_path: Optional[str] = None
+    video_path: Optional[str] = None
 
 
 class ForgetRequest(BaseModel):

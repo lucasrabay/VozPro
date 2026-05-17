@@ -4,7 +4,11 @@ import json
 from datetime import datetime, timezone
 from typing import Any
 
+import structlog
+
 from . import db
+
+log = structlog.get_logger("conversation")
 
 
 def _now_iso() -> str:
@@ -51,6 +55,24 @@ def append_turn(
                 "INSERT INTO conversations (phone, history_json) VALUES (?, ?)",
                 (phone, history_json),
             )
+
+    try:
+        db.ensure_phone_seen(phone, db_path)
+    except Exception:
+        log.warning("ensure_phone_seen_failed", phone=phone)
+
+
+def is_new_user(phone: str, db_path: str | None = None) -> bool:
+    """Returns True if the phone has no entry in phones table yet."""
+    try:
+        with db.connect(db_path) as conn:
+            row = conn.execute(
+                "SELECT 1 FROM phones WHERE phone = ?", (phone,)
+            ).fetchone()
+        return row is None
+    except Exception:
+        log.warning("is_new_user_check_failed", phone=phone)
+        return False
 
 
 def mark_completed(phone: str, db_path: str | None = None) -> None:
