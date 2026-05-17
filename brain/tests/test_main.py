@@ -147,3 +147,86 @@ async def test_invalid_curriculo_json_falls_back(client):
     data = r.json()
     assert data["pdf_path"] is None
     assert "probleminha" in data["text"].lower() or "problema" in data["text"].lower()
+
+
+async def test_new_user_gets_video_path(client):
+    c, main_mod = client
+    chat = FakeChatClient(
+        [
+            BiuReply(
+                user_transcript="oi",
+                response="Olá! Eu sou o Biu.",
+                type="saudacao",
+                generate_pdf=False,
+            )
+        ]
+    )
+    main_mod.set_clients(chat=chat, jobs=FakeJobsClient(), tts=FakeTTSClient())
+
+    r = await c.post(
+        "/message",
+        json={"phone": "+5581999991111", "kind": "text", "content": "oi"},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert data["video_path"] is not None
+    assert "apresentacao_biu.mp4" in data["video_path"]
+
+
+async def test_returning_user_no_video_path(client):
+    c, main_mod = client
+    phone = "+5581999992222"
+    for _ in range(2):
+        chat = FakeChatClient(
+            [
+                BiuReply(
+                    user_transcript="oi",
+                    response="Olá!",
+                    type="saudacao",
+                    generate_pdf=False,
+                )
+            ]
+        )
+        main_mod.set_clients(chat=chat, jobs=FakeJobsClient(), tts=FakeTTSClient())
+        r = await c.post(
+            "/message",
+            json={"phone": phone, "kind": "text", "content": "oi"},
+        )
+
+    assert r.status_code == 200
+    assert r.json()["video_path"] is None
+
+
+async def test_video_path_none_after_forget(client):
+    c, main_mod = client
+    phone = "+5581999993333"
+
+    chat = FakeChatClient(
+        [
+            BiuReply(
+                user_transcript="oi",
+                response="Olá!",
+                type="saudacao",
+                generate_pdf=False,
+            )
+        ]
+    )
+    main_mod.set_clients(chat=chat, jobs=FakeJobsClient(), tts=FakeTTSClient())
+    await c.post("/message", json={"phone": phone, "kind": "text", "content": "oi"})
+    await c.post("/forget", json={"phone": phone})
+
+    chat2 = FakeChatClient(
+        [
+            BiuReply(
+                user_transcript="oi",
+                response="Olá!",
+                type="saudacao",
+                generate_pdf=False,
+            )
+        ]
+    )
+    main_mod.set_clients(chat=chat2, jobs=FakeJobsClient(), tts=FakeTTSClient())
+    r = await c.post("/message", json={"phone": phone, "kind": "text", "content": "oi"})
+
+    assert r.status_code == 200
+    assert r.json()["video_path"] is None

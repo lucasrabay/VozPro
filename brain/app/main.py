@@ -101,7 +101,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Biu brain", lifespan=lifespan)
-app.mount("/static", StaticFiles(directory="/app/static"), name="static")
+_static_dir = os.environ.get("BIU_STATIC_DIR", "/app/static")
+if Path(_static_dir).is_dir():
+    app.mount("/static", StaticFiles(directory=_static_dir), name="static")
 log = get_logger("main")
 
 

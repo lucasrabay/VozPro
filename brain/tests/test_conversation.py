@@ -42,3 +42,14 @@ def test_mark_completed(temp_db):
             "SELECT status FROM conversations WHERE phone = ?", (phone,)
         ).fetchone()
     assert row["status"] == "completed"
+
+
+def test_is_new_user_returns_true_for_new_phone(temp_db):
+    assert conversation.is_new_user("+5581999990001") is True
+
+
+def test_is_new_user_returns_false_after_append_turn(temp_db):
+    phone = "+5581999990002"
+    assert conversation.is_new_user(phone) is True
+    conversation.append_turn(phone, "user", "oi")
+    assert conversation.is_new_user(phone) is False
