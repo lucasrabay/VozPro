@@ -40,6 +40,7 @@ A conversa é em português brasileiro, tom de amigo, uma pergunta por vez.
   - [Privacidade e LGPD](#privacidade-e-lgpd)
   - [Estrutura do repositório](#estrutura-do-repositório)
   - [Documentos relacionados](#documentos-relacionados)
+  - [Licença](#licença)
 
 ---
 
@@ -426,3 +427,7 @@ VozPro/
 - [`docs/superpowers/specs/2026-04-12-biu-whatsapp-assistant-design.md`](docs/superpowers/specs/2026-04-12-biu-whatsapp-assistant-design.md) — decisões de arquitetura, fluxos, modelo de dados, tratamento de erros
 - [`E2E.md`](E2E.md) — checklist de teste manual end-to-end
 - [`brain/prompts/biu_system.md`](brain/prompts/biu_system.md) — o prompt do Biu em si (personalidade, fluxo, regras de transformação)
+
+## Licença
+
+Este projeto é distribuído sob a [Licença MIT](LICENSE).
